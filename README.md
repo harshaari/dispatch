@@ -50,6 +50,7 @@ Then inspect:
 - order-service Prometheus metrics: `http://localhost:8080/actuator/prometheus`
 - payment-service readiness: `http://localhost:8081/actuator/health/readiness`
 - payment-service Prometheus metrics: `http://localhost:8081/actuator/prometheus`
+- dispatch-service readiness: `http://localhost:8082/actuator/health/readiness`
 
 The service stores an `OrderCreated` event with each newly created order and relays it to Kafka topic `dispatch.order.events.v1`. Replaying the same idempotency key does not create a second event.
 

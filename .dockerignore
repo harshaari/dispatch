@@ -9,3 +9,6 @@
 !services/payment-service/build/
 !services/payment-service/build/libs/
 !services/payment-service/build/libs/payment-service-*.jar
+!services/dispatch-service/build/
+!services/dispatch-service/build/libs/
+!services/dispatch-service/build/libs/dispatch-service-*.jar

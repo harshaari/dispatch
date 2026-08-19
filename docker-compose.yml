@@ -72,6 +72,38 @@ services:
       broker:
         condition: service_started
 
+  dispatch-postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: dispatching
+      POSTGRES_USER: dispatch
+      POSTGRES_PASSWORD: dispatch
+    ports:
+      - "5434:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dispatch -d dispatching"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  dispatch-service:
+    profiles: ["app"]
+    build:
+      context: .
+      dockerfile: infrastructure/docker/dispatch-service.Dockerfile
+    environment:
+      DB_URL: jdbc:postgresql://dispatch-postgres:5432/dispatching
+      DB_USERNAME: dispatch
+      DB_PASSWORD: dispatch
+      KAFKA_BOOTSTRAP_SERVERS: broker:19092
+    ports:
+      - "8082:8080"
+    depends_on:
+      dispatch-postgres:
+        condition: service_healthy
+      broker:
+        condition: service_started
+
   order-service:
     profiles: ["app"]
     build:
