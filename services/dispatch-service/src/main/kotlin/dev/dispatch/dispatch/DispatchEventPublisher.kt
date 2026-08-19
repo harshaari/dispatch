@@ -12,8 +12,10 @@ class DispatchEventPublisher(
     private val kafkaTemplate: KafkaTemplate<String, String>,
     private val objectMapper: ObjectMapper,
     @Value("\${app.dispatch.event-topic:dispatch.dispatch.events.v1}") private val topic: String,
+    @Value("\${app.dispatch.events.enabled:true}") private val enabled: Boolean,
 ) {
     fun publish(eventType: String, orderId: UUID, assignmentId: UUID) {
+        if (!enabled) return
         val payload = linkedMapOf(
             "eventId" to UUID.randomUUID(),
             "eventType" to eventType,

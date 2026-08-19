@@ -17,7 +17,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 @Testcontainers
-@SpringBootTest(properties = ["spring.kafka.listener.auto-startup=false"])
+@SpringBootTest(properties = ["spring.kafka.listener.auto-startup=false", "app.dispatch.events.enabled=false"])
 class DispatchConcurrencyIntegrationTest {
     @Autowired lateinit var listener: PaymentAuthorizedListener
     @Autowired lateinit var jdbcTemplate: JdbcTemplate
