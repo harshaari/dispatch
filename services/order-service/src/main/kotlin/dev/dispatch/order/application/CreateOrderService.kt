@@ -14,6 +14,7 @@ import dev.dispatch.order.persistence.OrderRepository
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.slf4j.LoggerFactory
 import java.sql.Timestamp
 import java.time.Duration
 import java.time.Instant
@@ -27,6 +28,8 @@ class CreateOrderService(
     private val objectMapper: ObjectMapper,
     private val requestHasher: RequestHasher,
 ) {
+    private val logger = LoggerFactory.getLogger(javaClass)
+
     @Transactional
     fun create(request: CreateOrderRequest, idempotencyKey: String): OrderResponse {
         if (idempotencyKey.isBlank() || idempotencyKey.length > 128) {
@@ -89,6 +92,9 @@ class CreateOrderService(
             objectMapper.writeValueAsString(response),
             recordId,
         )
+        logger.atInfo()
+            .addKeyValue("orderId", order.id)
+            .log("Order created")
         return response
     }
 
@@ -104,7 +110,11 @@ class CreateOrderService(
         if (record["request_hash"] != requestHash) throw IdempotencyConflictException()
         val body = record["response_body"] as? String
             ?: error("A committed idempotency record must contain a response body.")
-        return objectMapper.readValue(body, OrderResponse::class.java)
+        return objectMapper.readValue(body, OrderResponse::class.java).also {
+            logger.atInfo()
+                .addKeyValue("orderId", it.orderId)
+                .log("Order creation replayed")
+        }
     }
 
     private fun validateBusinessRules(request: CreateOrderRequest) {
