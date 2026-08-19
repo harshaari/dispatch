@@ -32,10 +32,10 @@ The integration test starts a real PostgreSQL container, runs Flyway, starts the
 
 ## Run locally
 
-Start PostgreSQL:
+Start PostgreSQL and Kafka:
 
 ```bash
-docker compose up -d postgres
+docker compose up -d postgres broker
 ./gradlew :services:order-service:bootRun
 ```
 
@@ -45,6 +45,8 @@ Then inspect:
 - liveness: `http://localhost:8080/actuator/health/liveness`
 - OpenAPI JSON: `http://localhost:8080/v3/api-docs`
 - Swagger UI: `http://localhost:8080/swagger-ui.html`
+
+The service stores an `OrderCreated` event with each newly created order and relays it to Kafka topic `dispatch.order.events.v1`. Replaying the same idempotency key does not create a second event.
 
 To build the service image first and run the entire local stack:
 
