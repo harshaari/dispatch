@@ -96,6 +96,7 @@ services:
       DB_USERNAME: dispatch
       DB_PASSWORD: dispatch
       KAFKA_BOOTSTRAP_SERVERS: broker:19092
+      INTERNAL_API_TOKEN: local-dispatch-token
     ports:
       - "8082:8080"
     depends_on:

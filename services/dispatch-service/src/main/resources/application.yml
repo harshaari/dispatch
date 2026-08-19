@@ -12,6 +12,7 @@ spring:
     listener:
       ack-mode: record
 app:
+  internal-api-token: ${INTERNAL_API_TOKEN:local-dispatch-token}
   dispatch:
     payment-topic: ${PAYMENT_EVENTS_TOPIC:dispatch.payment.events.v1}
     event-topic: ${DISPATCH_EVENTS_TOPIC:dispatch.dispatch.events.v1}
