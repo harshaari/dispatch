@@ -21,8 +21,12 @@ class PaymentAuthorizedListener(private val jdbcTemplate: JdbcTemplate, private 
         val driverId = jdbcTemplate.query(
             "SELECT id FROM drivers WHERE status = 'AVAILABLE' ORDER BY id FOR UPDATE SKIP LOCKED LIMIT 1",
             { rs, _ -> rs.getObject("id", UUID::class.java) },
-        ).firstOrNull() ?: error("No driver is currently available")
+        ).firstOrNull()
         val orderId = UUID.fromString(root.required("data").required("orderId").asString())
+        if (driverId == null) {
+            jdbcTemplate.update("INSERT INTO pending_assignments (order_id, created_at) VALUES (?, ?) ON CONFLICT DO NOTHING", orderId, Timestamp.from(Instant.now()))
+            return
+        }
         jdbcTemplate.update("UPDATE drivers SET status = 'ASSIGNED' WHERE id = ?", driverId)
         val assignmentId = UUID.randomUUID()
         jdbcTemplate.update("INSERT INTO assignments (id, order_id, driver_id, created_at) VALUES (?, ?, ?, ?)", assignmentId, orderId, driverId, Timestamp.from(Instant.now()))
