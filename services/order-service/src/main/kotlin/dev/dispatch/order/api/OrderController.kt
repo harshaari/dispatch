@@ -4,6 +4,8 @@ import dev.dispatch.order.application.CancelOrderService
 import dev.dispatch.order.application.CreateOrderService
 import dev.dispatch.order.application.GetOrderService
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.responses.ApiResponses
 import jakarta.validation.Valid
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -26,6 +28,11 @@ class OrderController(
 ) {
     @PostMapping
     @Operation(summary = "Create an order")
+    @ApiResponses(
+        ApiResponse(responseCode = "201", description = "Order created or idempotent response replayed"),
+        ApiResponse(responseCode = "400", description = "Invalid request"),
+        ApiResponse(responseCode = "409", description = "Idempotency key reused with a different request"),
+    )
     fun createOrder(
         @RequestHeader("Idempotency-Key") idempotencyKey: String,
         @Valid @RequestBody request: CreateOrderRequest,
@@ -38,9 +45,18 @@ class OrderController(
 
     @GetMapping("/{orderId}")
     @Operation(summary = "Get an order")
+    @ApiResponses(
+        ApiResponse(responseCode = "200", description = "Order found"),
+        ApiResponse(responseCode = "404", description = "Order not found"),
+    )
     fun getOrder(@PathVariable orderId: java.util.UUID): OrderDetailsResponse = getOrderService.get(orderId)
 
     @PostMapping("/{orderId}/cancel")
     @Operation(summary = "Cancel an order")
+    @ApiResponses(
+        ApiResponse(responseCode = "200", description = "Order cancelled"),
+        ApiResponse(responseCode = "404", description = "Order not found"),
+        ApiResponse(responseCode = "409", description = "Order cannot be cancelled from its current state"),
+    )
     fun cancelOrder(@PathVariable orderId: java.util.UUID): CancelOrderResponse = cancelOrderService.cancel(orderId)
 }
