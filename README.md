@@ -15,6 +15,8 @@ infrastructure/docker/      container build files
 ```
 
 The interview-oriented M1 design is in [the implementation contract](docs/architecture/dispatch-m1-implementation-contract.md). M2's event delivery boundary is specified in [the outbox and Kafka contract](docs/architecture/dispatch-m2-outbox-kafka-contract.md), and M3's asynchronous payment workflow is described in [its implementation contract](docs/architecture/dispatch-m3-payment-workflow-contract.md).
+
+For a concise end-to-end walkthrough, use the [portfolio demo runbook](docs/architecture/portfolio-demo-runbook.md).
 The rationale for the core tradeoffs is captured in [architecture decision records](docs/adr/README.md).
 
 ## Prerequisites
