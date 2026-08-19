@@ -1,0 +1,8 @@
+.git
+.gradle
+.gradle-local
+**/.DS_Store
+**/build/
+!services/order-service/build/
+!services/order-service/build/libs/
+!services/order-service/build/libs/order-service-*.jar
