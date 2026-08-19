@@ -12,7 +12,7 @@ infrastructure/docker/      container build files
 .github/workflows/          continuous integration
 ```
 
-The interview-oriented M1 design is in [the implementation contract](docs/architecture/dispatch-m1-implementation-contract.md).
+The interview-oriented M1 design is in [the implementation contract](docs/architecture/dispatch-m1-implementation-contract.md). M2's event delivery boundary is specified in [the outbox and Kafka contract](docs/architecture/dispatch-m2-outbox-kafka-contract.md).
 The rationale for the core tradeoffs is captured in [architecture decision records](docs/adr/README.md).
 
 ## Prerequisites
