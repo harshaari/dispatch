@@ -6,3 +6,4 @@ rootProject.name = "dispatch"
 
 include("services:order-service")
 include("services:payment-service")
+include("services:dispatch-service")

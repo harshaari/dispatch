@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: dispatch-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5434/dispatching}
+    username: ${DB_USERNAME:dispatch}
+    password: ${DB_PASSWORD:dispatch}
+  flyway:
+    enabled: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    listener:
+      ack-mode: record
+app:
+  dispatch:
+    payment-topic: ${PAYMENT_EVENTS_TOPIC:dispatch.payment.events.v1}
+    consumer-group: ${DISPATCH_CONSUMER_GROUP:dispatch-service-v1}
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
