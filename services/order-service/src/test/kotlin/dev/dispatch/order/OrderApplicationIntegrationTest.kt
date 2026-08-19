@@ -110,6 +110,23 @@ class OrderApplicationIntegrationTest {
     }
 
     @Test
+    fun `returns the accepted request id and does not reserve a key after validation fails`() {
+        mockMvc.perform(post("/api/v1/orders")
+            .header("Idempotency-Key", "validation-then-retry")
+            .header("X-Request-Id", "client-request-42")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(duplicateSkuRequest()))
+            .andExpect(status().isBadRequest)
+            .andExpect(header().string("X-Request-Id", "client-request-42"))
+
+        mockMvc.perform(post("/api/v1/orders")
+            .header("Idempotency-Key", "validation-then-retry")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(validRequest()))
+            .andExpect(status().isCreated)
+    }
+
+    @Test
     fun `retrieves and cancels a pending order`() {
         val createResult = mockMvc.perform(post("/api/v1/orders")
             .header("Idempotency-Key", "get-cancel-key")
@@ -131,6 +148,26 @@ class OrderApplicationIntegrationTest {
         mockMvc.perform(get("/api/v1/orders/$orderId"))
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.status").value("CANCELLED"))
+    }
+
+    @Test
+    fun `returns not found and rejects a second cancellation`() {
+        mockMvc.perform(get("/api/v1/orders/6a3dd577-391b-4d74-a58e-45382278e1ce"))
+            .andExpect(status().isNotFound)
+            .andExpect(jsonPath("$.code").value("ORDER_NOT_FOUND"))
+
+        val createResult = mockMvc.perform(post("/api/v1/orders")
+            .header("Idempotency-Key", "terminal-order-key")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(validRequest()))
+            .andReturn()
+        val orderId = objectMapper.readTree(createResult.response.contentAsString)["orderId"].asText()
+
+        mockMvc.perform(post("/api/v1/orders/$orderId/cancel"))
+            .andExpect(status().isOk)
+        mockMvc.perform(post("/api/v1/orders/$orderId/cancel"))
+            .andExpect(status().isConflict)
+            .andExpect(jsonPath("$.code").value("INVALID_STATE_TRANSITION"))
     }
 
     @Test
@@ -161,12 +198,53 @@ class OrderApplicationIntegrationTest {
         }
     }
 
+    @Test
+    fun `concurrent cancellation leaves one cancelled order`() {
+        val createResult = mockMvc.perform(post("/api/v1/orders")
+            .header("Idempotency-Key", "concurrent-cancel-key")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(validRequest()))
+            .andReturn()
+        val orderId = objectMapper.readTree(createResult.response.contentAsString)["orderId"].asText()
+        val executor = Executors.newFixedThreadPool(2)
+        val start = CountDownLatch(1)
+        try {
+            val responses = (1..2).map {
+                executor.submit<Int> {
+                    start.await()
+                    mockMvc.perform(post("/api/v1/orders/$orderId/cancel")).andReturn().response.status
+                }
+            }
+            start.countDown()
+            assertThat(responses.map { it.get(20, TimeUnit.SECONDS) }).contains(200).allMatch { it == 200 || it == 409 }
+            assertThat(jdbcTemplate.queryForObject("SELECT status FROM orders WHERE id = ?", String::class.java, java.util.UUID.fromString(orderId)))
+                .isEqualTo("CANCELLED")
+        } finally {
+            executor.shutdownNow()
+        }
+    }
+
     private fun validRequest(quantity: Int = 2) =
         """
         {
           "customerId": "cust_123",
           "merchantId": "merchant_456",
           "items": [{"sku": "burger_001", "quantity": $quantity, "unitPriceMinor": 1299}],
+          "currency": "USD",
+          "deliveryAddress": {"latitude": 35.61, "longitude": -78.74},
+          "paymentMethodId": "pm_123"
+        }
+        """.trimIndent()
+
+    private fun duplicateSkuRequest() =
+        """
+        {
+          "customerId": "cust_123",
+          "merchantId": "merchant_456",
+          "items": [
+            {"sku": "burger_001", "quantity": 1, "unitPriceMinor": 1299},
+            {"sku": "burger_001", "quantity": 1, "unitPriceMinor": 1299}
+          ],
           "currency": "USD",
           "deliveryAddress": {"latitude": 35.61, "longitude": -78.74},
           "paymentMethodId": "pm_123"
