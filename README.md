@@ -46,6 +46,9 @@ Then inspect:
 - liveness: `http://localhost:8080/actuator/health/liveness`
 - OpenAPI JSON: `http://localhost:8080/v3/api-docs`
 - Swagger UI: `http://localhost:8080/swagger-ui.html`
+- order-service Prometheus metrics: `http://localhost:8080/actuator/prometheus`
+- payment-service readiness: `http://localhost:8081/actuator/health/readiness`
+- payment-service Prometheus metrics: `http://localhost:8081/actuator/prometheus`
 
 The service stores an `OrderCreated` event with each newly created order and relays it to Kafka topic `dispatch.order.events.v1`. Replaying the same idempotency key does not create a second event.
 
