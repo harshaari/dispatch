@@ -6,3 +6,6 @@
 !services/order-service/build/
 !services/order-service/build/libs/
 !services/order-service/build/libs/order-service-*.jar
+!services/payment-service/build/
+!services/payment-service/build/libs/
+!services/payment-service/build/libs/payment-service-*.jar
