@@ -7,6 +7,7 @@ Dispatch is a portfolio backend for practicing and demonstrating reliable order 
 ```text
 services/order-service/     Kotlin/Spring Boot order service
 services/payment-service/   Kotlin/Spring Boot payment service (M3 in progress)
+services/dispatch-service/  Kotlin/Spring Boot driver assignment service (M6 in progress)
 docs/architecture/          implementation contracts and diagrams
 docs/adr/                   architecture decision records
 infrastructure/docker/      container build files
