@@ -14,6 +14,7 @@ spring:
 app:
   dispatch:
     payment-topic: ${PAYMENT_EVENTS_TOPIC:dispatch.payment.events.v1}
+    event-topic: ${DISPATCH_EVENTS_TOPIC:dispatch.dispatch.events.v1}
     consumer-group: ${DISPATCH_CONSUMER_GROUP:dispatch-service-v1}
 management:
   endpoint:

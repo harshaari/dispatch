@@ -10,7 +10,7 @@ import java.time.Instant
 import java.util.UUID
 
 @Component
-class PaymentAuthorizedListener(private val jdbcTemplate: JdbcTemplate, private val objectMapper: ObjectMapper) {
+class PaymentAuthorizedListener(private val jdbcTemplate: JdbcTemplate, private val objectMapper: ObjectMapper, private val events: DispatchEventPublisher) {
     @KafkaListener(topics = ["\${app.dispatch.payment-topic}"], groupId = "\${app.dispatch.consumer-group}")
     @Transactional
     fun assign(payload: String) {
@@ -24,6 +24,8 @@ class PaymentAuthorizedListener(private val jdbcTemplate: JdbcTemplate, private 
         ).firstOrNull() ?: error("No driver is currently available")
         val orderId = UUID.fromString(root.required("data").required("orderId").asString())
         jdbcTemplate.update("UPDATE drivers SET status = 'ASSIGNED' WHERE id = ?", driverId)
-        jdbcTemplate.update("INSERT INTO assignments (id, order_id, driver_id, created_at) VALUES (?, ?, ?, ?)", UUID.randomUUID(), orderId, driverId, Timestamp.from(Instant.now()))
+        val assignmentId = UUID.randomUUID()
+        jdbcTemplate.update("INSERT INTO assignments (id, order_id, driver_id, created_at) VALUES (?, ?, ?, ?)", assignmentId, orderId, driverId, Timestamp.from(Instant.now()))
+        events.publish("DriverAssigned", orderId, assignmentId)
     }
 }

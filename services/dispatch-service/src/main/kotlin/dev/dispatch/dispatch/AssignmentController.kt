@@ -12,26 +12,27 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/internal/v1/assignments")
-class AssignmentController(private val jdbcTemplate: JdbcTemplate) {
+class AssignmentController(private val jdbcTemplate: JdbcTemplate, private val events: DispatchEventPublisher) {
     @GetMapping
     fun list() = jdbcTemplate.query("SELECT id, order_id, driver_id, status FROM assignments ORDER BY created_at DESC") { rs, _ ->
         AssignmentView(rs.getObject("id", UUID::class.java), rs.getObject("order_id", UUID::class.java), rs.getObject("driver_id", UUID::class.java), rs.getString("status"))
     }
     @PostMapping("/{assignmentId}/pickup")
     @Transactional
-    fun pickup(@PathVariable assignmentId: UUID) = transition(assignmentId, "ASSIGNED", "PICKED_UP")
+    fun pickup(@PathVariable assignmentId: UUID) = transition(assignmentId, "ASSIGNED", "PICKED_UP", "OrderPickedUp")
 
     @PostMapping("/{assignmentId}/deliver")
     @Transactional
     fun deliver(@PathVariable assignmentId: UUID): AssignmentStatus {
-        val result = transition(assignmentId, "PICKED_UP", "DELIVERED")
+        val result = transition(assignmentId, "PICKED_UP", "DELIVERED", "OrderDelivered")
         jdbcTemplate.update("UPDATE drivers SET status = 'AVAILABLE' WHERE id = (SELECT driver_id FROM assignments WHERE id = ?)", assignmentId)
         return result
     }
 
-    private fun transition(id: UUID, expected: String, next: String): AssignmentStatus {
+    private fun transition(id: UUID, expected: String, next: String, eventType: String): AssignmentStatus {
         val updated = jdbcTemplate.update("UPDATE assignments SET status = ? WHERE id = ? AND status = ?", next, id, expected)
         if (updated != 1) throw IllegalStateException("Assignment cannot transition to $next")
+        events.publish(eventType, jdbcTemplate.queryForObject("SELECT order_id FROM assignments WHERE id = ?", UUID::class.java, id)!!, id)
         return AssignmentStatus(id, next)
     }
 }

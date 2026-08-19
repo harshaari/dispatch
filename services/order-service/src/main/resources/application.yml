@@ -22,6 +22,9 @@ app:
   payment:
     result-topic: ${PAYMENT_EVENTS_TOPIC:dispatch.payment.events.v1}
     consumer-group: ${ORDER_PAYMENT_CONSUMER_GROUP:order-service-payment-v1}
+  dispatch:
+    event-topic: ${DISPATCH_EVENTS_TOPIC:dispatch.dispatch.events.v1}
+    consumer-group: ${ORDER_DISPATCH_CONSUMER_GROUP:order-service-dispatch-v1}
   outbox:
     topic: ${OUTBOX_TOPIC:dispatch.order.events.v1}
     publisher:
