@@ -110,6 +110,17 @@ class OrderApplicationIntegrationTest {
     }
 
     @Test
+    fun `returns a structured validation error for malformed JSON`() {
+        mockMvc.perform(post("/api/v1/orders")
+            .header("Idempotency-Key", "bad-json-key")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{not-json"))
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+            .andExpect(jsonPath("$.timestamp").isNotEmpty)
+    }
+
+    @Test
     fun `returns the accepted request id and does not reserve a key after validation fails`() {
         mockMvc.perform(post("/api/v1/orders")
             .header("Idempotency-Key", "validation-then-retry")

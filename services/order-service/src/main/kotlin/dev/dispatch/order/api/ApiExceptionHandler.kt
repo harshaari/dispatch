@@ -9,14 +9,23 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.MissingRequestHeaderException
+import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.slf4j.LoggerFactory
 import org.springframework.orm.ObjectOptimisticLockingFailureException
 import java.time.Instant
 
 @RestControllerAdvice
 class ApiExceptionHandler {
-    @ExceptionHandler(MethodArgumentNotValidException::class, MissingRequestHeaderException::class, InvalidOrderRequestException::class)
+    private val logger = LoggerFactory.getLogger(javaClass)
+
+    @ExceptionHandler(
+        MethodArgumentNotValidException::class,
+        MissingRequestHeaderException::class,
+        HttpMessageNotReadableException::class,
+        InvalidOrderRequestException::class,
+    )
     fun badRequest(exception: Exception, request: HttpServletRequest): ResponseEntity<ApiErrorResponse> =
         error(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", exception.message ?: "The request is invalid.", request)
 
@@ -31,6 +40,12 @@ class ApiExceptionHandler {
     @ExceptionHandler(OrderNotFoundException::class)
     fun notFound(exception: OrderNotFoundException, request: HttpServletRequest): ResponseEntity<ApiErrorResponse> =
         error(HttpStatus.NOT_FOUND, "ORDER_NOT_FOUND", exception.message ?: "Order was not found.", request)
+
+    @ExceptionHandler(Exception::class)
+    fun unexpected(exception: Exception, request: HttpServletRequest): ResponseEntity<ApiErrorResponse> {
+        logger.error("Unexpected request failure", exception)
+        return error(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "An unexpected error occurred.", request)
+    }
 
     private fun error(
         status: HttpStatus,
