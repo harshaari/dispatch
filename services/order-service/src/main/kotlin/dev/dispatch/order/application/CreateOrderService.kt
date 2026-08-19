@@ -11,6 +11,7 @@ import dev.dispatch.order.persistence.OrderEntity
 import dev.dispatch.order.persistence.OrderItemEntity
 import dev.dispatch.order.persistence.OrderItemRepository
 import dev.dispatch.order.persistence.OrderRepository
+import dev.dispatch.order.outbox.OrderCreatedOutboxWriter
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -27,6 +28,7 @@ class CreateOrderService(
     private val jdbcTemplate: JdbcTemplate,
     private val objectMapper: ObjectMapper,
     private val requestHasher: RequestHasher,
+    private val orderCreatedOutboxWriter: OrderCreatedOutboxWriter,
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
@@ -92,6 +94,7 @@ class CreateOrderService(
             objectMapper.writeValueAsString(response),
             recordId,
         )
+        orderCreatedOutboxWriter.append(order, now)
         logger.atInfo()
             .addKeyValue("orderId", order.id)
             .log("Order created")

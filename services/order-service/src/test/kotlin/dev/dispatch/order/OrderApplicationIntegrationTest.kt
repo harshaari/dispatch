@@ -25,7 +25,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 @Testcontainers
-@SpringBootTest
+@SpringBootTest(properties = ["app.outbox.publisher.enabled=false"])
 @AutoConfigureMockMvc
 class OrderApplicationIntegrationTest {
 
@@ -40,7 +40,7 @@ class OrderApplicationIntegrationTest {
 
     @BeforeEach
     fun clearDatabase() {
-        jdbcTemplate.execute("TRUNCATE TABLE order_items, idempotency_records, orders")
+        jdbcTemplate.execute("TRUNCATE TABLE order_items, idempotency_records, outbox_events, orders")
     }
 
     @Test
