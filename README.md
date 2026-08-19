@@ -6,6 +6,7 @@ Dispatch is a portfolio backend for practicing and demonstrating reliable order 
 
 ```text
 services/order-service/     Kotlin/Spring Boot order service
+services/payment-service/   Kotlin/Spring Boot payment service (M3 in progress)
 docs/architecture/          implementation contracts and diagrams
 docs/adr/                   architecture decision records
 infrastructure/docker/      container build files
@@ -51,7 +52,7 @@ The service stores an `OrderCreated` event with each newly created order and rel
 To build the service image first and run the entire local stack:
 
 ```bash
-./gradlew :services:order-service:bootJar
+./gradlew :services:order-service:bootJar :services:payment-service:bootJar
 docker compose --profile app up --build
 ```
 

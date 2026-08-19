@@ -38,6 +38,40 @@ services:
     volumes:
       - dispatch-postgres-data:/var/lib/postgresql/data
 
+  payment-postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: payments
+      POSTGRES_USER: dispatch
+      POSTGRES_PASSWORD: dispatch
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dispatch -d payments"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - dispatch-payment-postgres-data:/var/lib/postgresql/data
+
+  payment-service:
+    profiles: ["app"]
+    build:
+      context: .
+      dockerfile: infrastructure/docker/payment-service.Dockerfile
+    environment:
+      DB_URL: jdbc:postgresql://payment-postgres:5432/payments
+      DB_USERNAME: dispatch
+      DB_PASSWORD: dispatch
+      KAFKA_BOOTSTRAP_SERVERS: broker:19092
+    ports:
+      - "8081:8080"
+    depends_on:
+      payment-postgres:
+        condition: service_healthy
+      broker:
+        condition: service_started
+
   order-service:
     profiles: ["app"]
     build:
@@ -58,3 +92,4 @@ services:
 
 volumes:
   dispatch-postgres-data:
+  dispatch-payment-postgres-data:
