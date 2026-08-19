@@ -13,6 +13,7 @@ infrastructure/docker/      container build files
 ```
 
 The interview-oriented M1 design is in [the implementation contract](docs/architecture/dispatch-m1-implementation-contract.md).
+The rationale for the core tradeoffs is captured in [architecture decision records](docs/adr/README.md).
 
 ## Prerequisites
 

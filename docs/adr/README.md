@@ -1,3 +1,9 @@
 # Architecture decision records
 
-This directory will hold accepted decisions in a short, reviewable format. Planned records cover PostgreSQL as the transactional source of truth, Spring MVC, database-backed idempotency, the later transactional outbox, and monorepo/service data ownership.
+These short, reviewable records capture decisions that are stable enough to guide implementation:
+
+- [ADR-001: PostgreSQL as the M1 transactional store](001-postgresql-transactional-store.md)
+- [ADR-002: Spring MVC for synchronous order APIs](002-spring-mvc.md)
+- [ADR-003: Database-backed idempotency](003-database-backed-idempotency.md)
+- [ADR-004: Transactional outbox in the Kafka milestone](004-transactional-outbox-later.md)
+- [ADR-005: Monorepo and service-owned data](005-monorepo-and-data-ownership.md)
