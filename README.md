@@ -52,6 +52,10 @@ To build the service image first and run the entire local stack:
 docker compose --profile app up --build
 ```
 
-## Current boundary
+## M1 API
 
-The M1 schema and infrastructure are present, but order endpoints are deliberately not implemented in this scaffold. Client-provided `unitPriceMinor` will be accepted in M1 as a documented simulation boundary; a real service would obtain authoritative prices from a catalog/pricing domain.
+- `POST /api/v1/orders` creates an order with an `Idempotency-Key`.
+- `GET /api/v1/orders/{orderId}` returns the stored order and items.
+- `POST /api/v1/orders/{orderId}/cancel` cancels an eligible order.
+
+The create endpoint returns `201 Created` and stores its response for same-key/same-request retries. Reusing a key with a different request returns `409 Conflict`. Client-provided `unitPriceMinor` is an intentional M1 simulation boundary; a real service would obtain authoritative prices from a catalog/pricing domain.

@@ -192,6 +192,6 @@ Unit tests cover state transitions, money arithmetic, validation, canonicalizati
 
 ## Delivery sequence
 
-This repository scaffold is the healthy baseline. The next change should implement one vertical create-order slice with its tests, followed by retrieve and cancel behavior. Later milestones introduce the transactional outbox and Kafka, a payment service, concurrency-safe driver dispatch, resilience, Redis only for a demonstrated access pattern, observability, load testing, and deployment packaging.
+The repository now implements the M1 create, retrieve, and cancel slices with PostgreSQL-backed integration tests. Later milestones introduce the transactional outbox and Kafka, a payment service, concurrency-safe driver dispatch, resilience, Redis only for a demonstrated access pattern, observability, load testing, and deployment packaging.
 
 The central interview takeaway is deliberate restraint: M1 solves reliable local transactions completely before distributed components create new failure modes.
