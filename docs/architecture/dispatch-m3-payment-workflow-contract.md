@@ -18,7 +18,7 @@ M3 includes a deterministic local payment gateway simulator only. It is an adapt
 
 `payment-service` owns its payment records and its PostgreSQL database. It consumes `OrderCreated` from `dispatch.order.events.v1` and publishes payment results to `dispatch.payment.events.v1`. Its consumer records processed event IDs before completing work, so Kafka redelivery cannot create a second payment decision.
 
-The order service consumes payment results and changes only an eligible `PAYMENT_PENDING` order. It writes the resulting order-state event to its existing outbox in the same database transaction. Repeated or stale payment results are harmless.
+The order service consumes payment results and changes only an eligible `PAYMENT_PENDING` order. Repeated or stale payment results are harmless. The order-state event for downstream dispatch is deferred to the dispatch milestone.
 
 ## Events
 
@@ -40,7 +40,7 @@ Payment events use the established M2 envelope convention and use the order UUID
 
 ## Payment decision and state rules
 
-The simulator authorizes normal test method IDs and declines IDs with the explicit `pm_decline_` prefix. The rule exists only to make happy and failure paths executable locally; changing to a real provider later happens behind the gateway interface.
+The simulator authorizes normal test orders and declines merchant IDs with the explicit `merchant_decline_` prefix. This keeps the M2 promise not to publish a payment-method reference. The rule exists only to make happy and failure paths executable locally; changing to a real provider later happens behind the gateway interface.
 
 | Current order status | Result | New order status |
 | --- | --- | --- |

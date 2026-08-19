@@ -17,6 +17,9 @@ spring:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
 
 app:
+  payment:
+    result-topic: ${PAYMENT_EVENTS_TOPIC:dispatch.payment.events.v1}
+    consumer-group: ${ORDER_PAYMENT_CONSUMER_GROUP:order-service-payment-v1}
   outbox:
     topic: ${OUTBOX_TOPIC:dispatch.order.events.v1}
     publisher:
